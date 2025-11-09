@@ -1,10 +1,9 @@
-# Impor 'session', 'secret_key', 'flash' dan 'werkzeug'
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
 app = Flask(__name__)
-app.secret_key = 'ini_kunci_rahasia_kamu_angel_bisa_diisi_apa_saja'
+app.secret_key = 'kunci_rahasia_sistem_manajemen_mahasiswa'
 DB_NAME = 'database.db'
 
 def get_db_conn():
@@ -12,16 +11,18 @@ def get_db_conn():
     conn.row_factory = sqlite3.Row 
     return conn
 
-# --- FUNGSI UNTUK ADMIN ---
+# --- FUNGSI UNTUK CEK ADMIN ---
 def is_admin():
     """Cek apakah user adalah admin"""
+    # Di sistem baru ini, hanya admin yang bisa login
     return 'user_role' in session and session['user_role'] == 'admin'
 
 # --- ROUTE LOGIN (HALAMAN UTAMA) ---
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if 'user_username' in session:
-        return redirect(url_for('show_beranda')) 
+    if is_admin():
+        # Jika sudah login, langsung ke dashboard
+        return redirect(url_for('manajemen_mahasiswa')) 
 
     error = None
     if request.method == 'POST':
@@ -29,178 +30,126 @@ def login():
         password = request.form['password']
         
         conn = get_db_conn()
+        # Kita cek ke tabel 'users' (tabel admin)
         user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
         conn.close()
         
-        if user and check_password_hash(user['password'], password):
+        if user and check_password_hash(user['password'], password) and user['role'] == 'admin':
             session['user_username'] = user['username']
             session['user_role'] = user['role'] 
-            return redirect(url_for('show_beranda'))
+            return redirect(url_for('manajemen_mahasiswa'))
         else:
-            error = "Username atau Password salah."
+            error = "Username atau Password Admin salah."
             
-    return render_template('user/login.html', error=error)
+    return render_template('login.html', error=error)
 
-# --- ROUTE REGISTER BARU ---
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        nama_lengkap = request.form['nama_lengkap']
-        bio = request.form['bio']
-        
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        
-        try:
-            conn = get_db_conn()
-            conn.execute("""
-                INSERT INTO users (username, password, nama_lengkap, bio, role)
-                VALUES (?, ?, ?, ?, 'user')
-            """, (username, hashed_password, nama_lengkap, bio))
-            conn.commit()
-            conn.close()
-            
-            flash("Akun berhasil dibuat! Silakan login.", "success")
-            return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
-            error = "Username sudah digunakan. Coba yang lain."
-            return render_template('user/register.html', error=error)
-
-    return render_template('user/register.html')
+# --- ROUTE REGISTER (DIHAPUS) ---
+# Pendaftaran publik tidak diperlukan, admin dibuat via init_db.py
 
 # --- ROUTE BERANDA (ROUTER) ---
-@app.route('/beranda')
+@app.route('/')
 def show_beranda():
-    if 'user_username' not in session:
+    if not is_admin():
         return redirect(url_for('login'))
     
-    if is_admin():
-        # PENYESUAIAN: Admin sekarang melihat halaman sambutan
-        return render_template('admin/beranda_admin.html', logged_in_user=session['user_username'])
-    else:
-        # User biasa melihat beranda user
-        conn = get_db_conn()
-        user_data = conn.execute("SELECT * FROM users WHERE username = ?", (session['user_username'],)).fetchone()
-        conn.close()
-        return render_template('user/beranda_user.html', user=user_data)
+    # Admin langsung diarahkan ke halaman manajemen
+    return redirect(url_for('manajemen_mahasiswa'))
 
-# --- ROUTE BARU KHUSUS MANAJEMEN ADMIN ---
-@app.route('/admin/manajemen')
-def manajemen_user():
+# --- ROUTE UTAMA MANAJEMEN MAHASISWA (CRUD) ---
+@app.route('/dashboard')
+def manajemen_mahasiswa():
     if not is_admin():
         return redirect(url_for('login')) # Hanya admin
         
     conn = get_db_conn()
-    users_list = conn.execute("SELECT id, username, nama_lengkap, role FROM users").fetchall()
+    # Ambil data dari tabel 'mahasiswa'
+    list_mahasiswa = conn.execute("SELECT id, nama_lengkap, nim, jurusan, email FROM mahasiswa").fetchall()
     conn.close()
-    # Menampilkan halaman CRUD
-    return render_template('admin/manajemen_user.html', users=users_list, logged_in_user=session['user_username'])
+    
+    # Menampilkan halaman dashboard
+    return render_template('dashboard.html', mahasiswa=list_mahasiswa, logged_in_user=session['user_username'])
 
 # --- ROUTE CRUD (Admin Only) ---
 
-@app.route('/admin/add', methods=['POST'])
-def add_user():
+@app.route('/add', methods=['POST'])
+def add_mahasiswa():
     if not is_admin():
         return redirect(url_for('login'))
         
-    # (Logika 'add_user' kamu tetap sama)
-    username = request.form['username']
-    password = request.form['password']
+    # Ambil data dari form
     nama_lengkap = request.form['nama_lengkap']
-    bio = request.form['bio']
-    role = request.form['role']
-    hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+    nim = request.form['nim']
+    jurusan = request.form['jurusan']
+    email = request.form['email']
     
-    conn = get_db_conn()
-    conn.execute("""
-        INSERT INTO users (username, password, nama_lengkap, bio, role)
-        VALUES (?, ?, ?, ?, ?)
-    """, (username, hashed_password, nama_lengkap, bio, role))
-    conn.commit()
-    conn.close()
-    
-    flash("User baru berhasil ditambahkan!", "success")
-    # PENYESUAIAN: Redirect ke halaman manajemen, bukan beranda
-    return redirect(url_for('manajemen_user'))
+    try:
+        conn = get_db_conn()
+        conn.execute("""
+            INSERT INTO mahasiswa (nama_lengkap, nim, jurusan, email)
+            VALUES (?, ?, ?, ?)
+        """, (nama_lengkap, nim, jurusan, email))
+        conn.commit()
+        conn.close()
+        flash("Data mahasiswa baru berhasil ditambahkan!", "success")
+    except sqlite3.IntegrityError:
+        flash(f"NIM '{nim}' sudah ada di database. Gunakan NIM lain.", "error")
+        
+    return redirect(url_for('manajemen_mahasiswa'))
 
-@app.route('/admin/edit/<int:user_id>', methods=['GET', 'POST'])
-def edit_user(user_id):
+@app.route('/edit/<int:mahasiswa_id>', methods=['GET', 'POST'])
+def edit_mahasiswa(mahasiswa_id):
     if not is_admin():
         return redirect(url_for('login')) 
     
     conn = get_db_conn()
     
     if request.method == 'POST':
-        # (Logika 'edit_user' POST kamu tetap sama)
+        # Logika update data
         nama_lengkap = request.form['nama_lengkap']
-        bio = request.form['bio']
-        role = request.form['role']
+        nim = request.form['nim']
+        jurusan = request.form['jurusan']
+        email = request.form['email']
         
-        conn.execute("""
-            UPDATE users SET nama_lengkap = ?, bio = ?, role = ?
-            WHERE id = ?
-        """, (nama_lengkap, bio, role, user_id))
-        
-        password = request.form['password']
-        if password:
-            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-            conn.execute("UPDATE users SET password = ? WHERE id = ?", (hashed_password, user_id))
+        try:
+            conn.execute("""
+                UPDATE mahasiswa SET nama_lengkap = ?, nim = ?, jurusan = ?, email = ?
+                WHERE id = ?
+            """, (nama_lengkap, nim, jurusan, email, mahasiswa_id))
+            conn.commit()
+            flash("Data mahasiswa berhasil diupdate.", "success")
+        except sqlite3.IntegrityError:
+            flash(f"NIM '{nim}' sudah digunakan oleh mahasiswa lain.", "error")
+        finally:
+            conn.close()
             
-        conn.commit()
-        conn.close()
-        flash("Data user berhasil diupdate.", "success")
-        # PENYESUAIAN: Redirect ke halaman manajemen, bukan beranda
-        return redirect(url_for('manajemen_user'))
+        return redirect(url_for('manajemen_mahasiswa'))
     
-    # (Logika 'edit_user' GET kamu tetap sama)
-    user_data = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    # Logika GET (menampilkan form edit)
+    mhs_data = conn.execute("SELECT * FROM mahasiswa WHERE id = ?", (mahasiswa_id,)).fetchone()
     conn.close()
-    if not user_data:
-        return redirect(url_for('manajemen_user'))
+    
+    if not mhs_data:
+        flash("Data mahasiswa tidak ditemukan.", "error")
+        return redirect(url_for('manajemen_mahasiswa'))
         
-    return render_template('admin/edit_user.html', user=user_data)
+    return render_template('edit_mahasiswa.html', mhs=mhs_data)
 
-@app.route('/admin/delete/<int:user_id>', methods=['POST'])
-def delete_user(user_id):
+@app.route('/delete/<int:mahasiswa_id>', methods=['POST'])
+def delete_mahasiswa(mahasiswa_id):
     if not is_admin():
         return redirect(url_for('login')) 
     
-    # (Logika 'delete_user' kamu tetap sama)
+    # Hapus data dari tabel 'mahasiswa'
     conn = get_db_conn()
-    admin_user = conn.execute("SELECT * FROM users WHERE username = ?", (session['user_username'],)).fetchone()
-    if admin_user['id'] == user_id:
-        flash("Admin tidak bisa menghapus akunnya sendiri!", "error")
-        return redirect(url_for('manajemen_user'))
-
-    conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.execute("DELETE FROM mahasiswa WHERE id = ?", (mahasiswa_id,))
     conn.commit()
     conn.close()
     
-    flash("User berhasil dihapus.", "success")
-    # PENYESUAIAN: Redirect ke halaman manajemen, bukan beranda
-    return redirect(url_for('manajemen_user'))
+    flash("Data mahasiswa berhasil dihapus.", "success")
+    return redirect(url_for('manajemen_mahasiswa'))
 
-# --- Route Lama (masih berfungsi, tapi terkunci) ---
-@app.route('/profile')
-def profile():
-    if 'user_username' not in session:
-        return redirect(url_for('login'))
-    return render_template('user/profile.html')
-
-@app.route('/profile/<username>')
-def show_user_profile(username):
-    if 'user_username' not in session:
-        return redirect(url_for('login'))
-        
-    conn = get_db_conn()
-    user_data = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-    conn.close()
-    
-    if user_data:
-        return render_template('user/user_profile.html', user=user_data)
-    else:
-        return render_template('user/404_user.html', username=username), 404
+# --- Route Lama (Dihapus) ---
+# /profile, /profile/<username> tidak diperlukan lagi
 
 # --- LOGOUT ---
 @app.route('/logout')
@@ -211,4 +160,3 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True)
-

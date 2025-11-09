@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Akun Baru</title>
-    <!-- Kita pakai style login.css lagi agar mirip -->
+    <title>Login - Sistem Manajemen Mahasiswa</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
     
     <div class="login-container">
         <div class="login-card">
-            <h2>Daftar Akun Karyawan</h2>
+            <h2>Login Admin</h2>
+            <p style="text-align: center; margin-top: -20px; color: #555;">Sistem Manajemen Data Mahasiswa</p>
 
             {% if error %}
                 <p class="error-message">{{ error }}</p>
             {% endif %}
             
-            <form action="{{ url_for('register') }}" method="POST">
+            <form action="{{ url_for('login') }}" method="POST">
                 <div class="input-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required>
@@ -26,20 +26,11 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required>
                 </div>
-                <div class="input-group">
-                    <label for="nama_lengkap">Nama Lengkap</label>
-                    <input type="text" id="nama_lengkap" name="nama_lengkap" required>
-                </div>
-                <div class="input-group">
-                    <label for="bio">Bio Singkat</label>
-                    <input type="text" id="bio" name="bio">
-                </div>
-                <button type="submit" class="login-button">Daftar</button>
+                <button type="submit" class="login-button">Masuk</button>
             </form>
             
             <div class="extra-links">
-                Sudah punya akun? <a href="{{ url_for('login') }}">Login di sini</a>
-            </div>
+                </div>
         </div>
     </div>
 

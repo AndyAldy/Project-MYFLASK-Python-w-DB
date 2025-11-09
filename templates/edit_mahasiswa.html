@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Mahasiswa: {{ mhs['nama_lengkap'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Data Mahasiswa</h1>
+        <p class="username-tag">@{{ mhs['nim'] }} - {{ mhs['nama_lengkap'] }}</p>
+
+        <div class="form-card">
+            <form action="{{ url_for('edit_mahasiswa', mahasiswa_id=mhs['id']) }}" method="POST" class="crud-form vertical">
+                
+                <label for="nama_lengkap">Nama Lengkap</label>
+                <input type="text" name="nama_lengkap" id="nama_lengkap" value="{{ mhs['nama_lengkap'] }}" required>
+                
+                <label for="nim">NIM</label>
+                <input type="text" name="nim" id="nim" value="{{ mhs['nim'] }}" required>
+                
+                <label for="jurusan">Jurusan</label>
+                <input type="text" name="jurusan" id="jurusan" value="{{ mhs['jurusan'] }}" required>
+
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" value="{{ mhs['email'] }}">
+                
+                <button type="submit" class="btn btn-create">Update Data</button>
+                
+                <a href="{{ url_for('manajemen_mahasiswa') }}" class="btn btn-delete" style="text-align: center;">Batal</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

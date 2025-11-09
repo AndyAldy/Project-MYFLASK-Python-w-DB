@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Manajemen Mahasiswa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="user-session">
+            Halo, <strong>{{ logged_in_user }}</strong>! (Admin)
+            <a href="{{ url_for('logout') }}" class="logout-link">[Logout]</a>
+        </div>
+        
+        <h1>Sistem Manajemen Data Mahasiswa</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="flash-message {{ category }}">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-card">
+            <h2>Tambah Mahasiswa Baru</h2>
+            <form action="{{ url_for('add_mahasiswa') }}" method="POST" class="crud-form">
+                <input type="text" name="nama_lengkap" placeholder="Nama Lengkap" required>
+                <input type="text" name="nim" placeholder="NIM (Nomor Induk Mahasiswa)" required>
+                <input type="text" name="jurusan" placeholder="Jurusan" required>
+                <input type="email" name="email" placeholder="Email (Opsional)">
+                <button type="submit" class="btn btn-create">Tambah Data</button>
+            </form>
+        </div>
+
+        <h2>Daftar Mahasiswa</h2>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Nama Lengkap</th>
+                    <th>NIM</th>
+                    <th>Jurusan</th>
+                    <th>Email</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mhs in mahasiswa %}
+                <tr>
+                    <td>{{ mhs['nama_lengkap'] }}</td>
+                    <td>{{ mhs['nim'] }}</td>
+                    <td>{{ mhs['jurusan'] }}</td>
+                    <td>{{ mhs['email'] }}</td>
+                    <td class="action-buttons">
+                        <a href="{{ url_for('edit_mahasiswa', mahasiswa_id=mhs['id']) }}" class="btn btn-update">Edit</a>
+                        
+                        <form action="{{ url_for('delete_mahasiswa', mahasiswa_id=mhs['id']) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-delete" onclick="return confirm('Yakin ingin menghapus data {{ mhs.nama_lengkap }} ({{ mhs.nim }})?');">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">Belum ada data mahasiswa di database.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>

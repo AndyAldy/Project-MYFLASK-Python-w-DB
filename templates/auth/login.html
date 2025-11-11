@@ -10,8 +10,16 @@
     
     <div class="login-container">
         <div class="login-card">
-            <h2>Login Admin</h2>
+            <h2>Login Sistem</h2>
             <p style="text-align: center; margin-top: -20px; color: #555;">Sistem Manajemen Data Mahasiswa</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <p class="flash-message {{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
             {% if error %}
                 <p class="error-message">{{ error }}</p>
@@ -19,7 +27,7 @@
             
             <form action="{{ url_for('login') }}" method="POST">
                 <div class="input-group">
-                    <label for="username">Username</label>
+                    <label for="username">Username (Admin) atau NIM (Mahasiswa)</label>
                     <input type="text" id="username" name="username" required>
                 </div>
                 <div class="input-group">
@@ -30,7 +38,8 @@
             </form>
             
             <div class="extra-links">
-                </div>
+                Belum punya akun? <a href="{{ url_for('register') }}">Daftar sebagai Mahasiswa</a>
+            </div>
         </div>
     </div>
 

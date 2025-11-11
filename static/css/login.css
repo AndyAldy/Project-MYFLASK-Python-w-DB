@@ -3,21 +3,19 @@ body {
     margin: 0;
     
     /* 1. ATUR BACKGROUND UTAMA */
-    /* Ganti URL ini dengan gambar background yang kamu suka */
     background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1400');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed; /* Biar background tidak ikut scroll */
+    background-attachment: fixed;
     
     color: #333;
 }
 
 .login-container {
-    /* Ini trik untuk membuat kotak login pas di tengah layar */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Setinggi layar penuh */
+    height: 100vh;
     padding: 20px;
     box-sizing: border-box;
 }
@@ -27,15 +25,10 @@ body {
     width: 100%;
     max-width: 400px;
     padding: 35px;
-    
-    /* Ini yang membuat efek "blur" pada background di belakang kartu */
-    background: rgba(255, 255, 255, 0.25); /* Kaca semi-transparan */
+    background: rgba(255, 255, 255, 0.25);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* Untuk browser Safari */
-    
-    /* Ini yang membuat "timbul" */
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.18);
 }
@@ -65,7 +58,7 @@ body {
     padding: 12px 15px;
     border: 1px solid #bdc3c7;
     border-radius: 6px;
-    box-sizing: border-box; /* Penting agar padding tidak merusak layout */
+    box-sizing: border-box;
     font-size: 1rem;
 }
 
@@ -107,7 +100,7 @@ body {
     text-decoration: underline;
 }
 
-/* Style untuk pesan error */
+/* Style untuk pesan error (bawaan) */
 .error-message {
     color: #D8000C;
     background-color: #FFD2D2;
@@ -116,4 +109,25 @@ body {
     text-align: center;
     margin-bottom: 15px;
     font-weight: 500;
+}
+
+/* --- TAMBAHAN BARU (DARI FILE HTML) --- */
+/* Style untuk flash message (dipindahkan dari login.html & register.html) */
+
+.flash-message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.flash-message.success {
+    background-color: #D4EDDA; 
+    color: #155724; 
+    border: 1px solid #C3E6CB;
+}
+.flash-message.error {
+    background-color: #F8D7DA; 
+    color: #721C24; 
+    border: 1px solid #F5C6CB;
 }

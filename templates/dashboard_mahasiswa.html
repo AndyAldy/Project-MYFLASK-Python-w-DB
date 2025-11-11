@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beranda Mahasiswa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="user-session">
+            Halo, <strong>{{ logged_in_user }}</strong>! (Mahasiswa)
+            <a href="{{ url_for('logout') }}" class="logout-link">[Logout]</a>
+        </div>
+        
+        <h1>Selamat Datang di Beranda Anda</h1>
+        <p>Ini adalah halaman profil Anda. Data Anda yang tersimpan di sistem adalah sebagai berikut:</p>
+
+        <div class="form-card admin-info-card" style="border-left-color: #2ecc71;"> <h2>Data Diri Mahasiswa</h2>
+            <p><strong>Nama:</strong> {{ mhs.nama_lengkap }}</p>
+            <p><strong>NIM:</strong> {{ mhs.nim }}</p>
+            <p><strong>Jurusan:</strong> {{ mhs.jurusan }}</p>
+            <p><strong>Email:</strong> {{ mhs.email }}</p>
+        </div>
+        
+    </div>
+</body>
+</html>

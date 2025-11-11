@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendaftaran Akun Mahasiswa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <h2>Buat Akun Mahasiswa</h2>
+            <p style="text-align: center; margin-top: -20px; color: #555;">Data akan disimpan di sistem</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <p class="flash-message {{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form action="{{ url_for('register') }}" method="POST">
+                <div class="input-group">
+                    <label for="nama_lengkap">Nama Lengkap</label>
+                    <input type="text" id="nama_lengkap" name="nama_lengkap" required>
+                </div>
+                <div class="input-group">
+                    <label for="nim">NIM (Gunakan untuk login)</label>
+                    <input type="text" id="nim" name="nim" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="jurusan">Jurusan</label>
+                    <input type="text" id="jurusan" name="jurusan" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email Kampus</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                <button type="submit" class="login-button">Daftar Akun</button>
+            </form>
+            
+            <div class="extra-links">
+                Sudah punya akun? <a href="{{ url_for('login') }}">Login di sini</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

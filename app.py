@@ -78,9 +78,9 @@ def login():
 
         cursor.close()
         conn.close()
-        # --- PERUBAHAN --- (Memperbaiki pesan error agar akurat)
         error = "NIM atau Password salah."
             
+    # Saya perbaiki juga label di login.html, pastikan Anda menggantinya
     return render_template('auth/login.html', error=error)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -151,7 +151,6 @@ def dashboard_mahasiswa():
         
     return render_template('dashboard_mahasiswa.html', mhs=mhs_data, logged_in_user=session['username'])
 
-# --- PERUBAHAN --- (Menambahkan rute baru untuk mahasiswa ubah password)
 @app.route('/ubah-password', methods=['POST'])
 def ubah_password():
     if not is_mahasiswa():
@@ -196,6 +195,42 @@ def ubah_password():
 
     return redirect(url_for('dashboard_mahasiswa'))
 
+# --- PERUBAHAN BARU ---
+# Menambahkan rute baru untuk mahasiswa mengubah email
+@app.route('/ubah-email', methods=['POST'])
+def ubah_email():
+    if not is_mahasiswa():
+        flash("Anda harus login sebagai mahasiswa.", "error")
+        return redirect(url_for('login'))
+
+    email_baru = request.form['email_baru']
+    
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        
+        # Update email di database
+        cursor.execute("UPDATE mahasiswa SET email = %s WHERE id = %s", 
+                       (email_baru, session['user_id']))
+        conn.commit()
+        
+        flash("Email Anda telah berhasil diperbarui.", "success")
+
+    except Error as e:
+        if conn:
+            conn.rollback()
+        flash(f"Terjadi error saat mengubah email: {e}", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
+    return redirect(url_for('dashboard_mahasiswa'))
+# --- AKHIR PERUBAHAN BARU ---
+
 @app.route('/dashboard')
 def manajemen_mahasiswa():
     if not is_admin():
@@ -233,7 +268,6 @@ def add_mahasiswa():
         conn = get_db_conn()
         cursor = conn.cursor()
         
-        # --- PERUBAHAN --- (Menggunakan NIM sebagai password default)
         hashed_password = generate_password_hash(nim, method='pbkdf2:sha256')
         
         cursor.execute("""
@@ -242,7 +276,6 @@ def add_mahasiswa():
         """, (nama_lengkap, nim, jurusan, email, hashed_password))
         conn.commit()
         
-        # --- PERUBAHAN --- (Memperbarui pesan flash agar admin tahu password defaultnya)
         flash(f"Data mahasiswa '{nama_lengkap}' berhasil ditambahkan! (Password default: {nim})", "success")
         
     except Error as e:

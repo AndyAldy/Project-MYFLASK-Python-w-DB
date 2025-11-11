@@ -29,9 +29,39 @@
             <p><strong>Nama:</strong> {{ mhs.nama_lengkap }}</p>
             <p><strong>NIM:</strong> {{ mhs.nim }}</p>
             <p><strong>Jurusan:</strong> {{ mhs.jurusan }}</p>
-            <p><strong>Email:</strong> {{ mhs.email }}</p>
-        </div>
+            
+            <p><strong>Email:</strong> 
+                {% if mhs.email %}
+                    {{ mhs.email }}
+                {% else %}
+                    <span style="color: #7f8c8d; font-style: italic;">(Belum ditambahkan)</span>
+                {% endif %}
+            </p>
+            </div>
 
+        <div class="form-card">
+            <h2>
+                {% if mhs.email %}
+                    Edit Email Anda
+                {% else %}
+                    Tambahkan Email Anda
+                {% endif %}
+            </h2>
+            <form action="{{ url_for('ubah_email') }}" method="POST" class="crud-form vertical">
+                <label for="email_baru">Email</label>
+                <input type="email" name="email_baru" id="email_baru" 
+                       value="{{ mhs.email if mhs.email else '' }}" 
+                       placeholder="Masukkan email kampus Anda" required>
+                
+                <button type="submit" class="btn btn-create" style="background-color: #3498db;">
+                    {% if mhs.email %}
+                        Update Email
+                    {% else %}
+                        Tambahkan Email
+                    {% endif %}
+                </button>
+            </form>
+        </div>
         <div class="form-card">
             <h2>Ubah Password Anda</h2>
             <form action="{{ url_for('ubah_password') }}" method="POST" class="crud-form vertical">

@@ -79,7 +79,7 @@ def login():
 
         cursor.close()
         conn.close()
-        error = "NIM/Username atau Password salah."
+        error = "NIM atau Password salah."
             
     # REFATOR: Menggunakan path template baru
     return render_template('auth/login.html', error=error)
